@@ -1,3 +1,4 @@
+require "pry"
 class ApplicationController < Sinatra::Base
   set :default_content_type, 'application/json'
 
@@ -15,5 +16,64 @@ class ApplicationController < Sinatra::Base
       } }
     })
   end
+
+  get '/reviews' do
+    review = Review.all.order(:title).limit(10)
+    review.to_json
+  end
+
+  # delete server route  to handle DELETE REQUESTS:
+
+  delete '/reviews/:id' do
+    # find the review using the ID
+    review = Review.find(params[:id])
+    # delete the review
+    review.destroy
+    # send a response with the deleted review as JSON
+    review.to_json
+  end
+  # IN POSTMAN, sending a DELETE request to "http://localhost:9292/reviews/ID" will delete with "ID" 
+  # bcos of route/method (delete '/reviews/:id') defined 
+
+
+  # post server route  to handle POST REQUESTS:
+
+  post "/reviews" do 
+
+      # Rack::JSONBodyParser middleware does the work of reading the body of the request, 
+      # parsing it from a JSON string into a Ruby hash, and adding it to the params hash.
+
+      # Body attributes being posted when this method is called are stored in {params}, 
+      # and attribute keys in the {params} can be extracted to create new instance of Review Class.
+      
+      review = Review.create(
+        score: params[:score],
+        comment: params[:comment],
+        game_id: params[:game_id],
+        user_id: params[:user_id]
+      )
+      review.to_json
+  end
+
+  #patch server route to handle PATCH REQUESTS
+
+  patch "/reviews/:id" do
+    review = Review.find(params[:id])
+    review.update(
+      score: params[:score],
+      comment: params[:comment]
+      # game_id: params[:game_id],
+      # user_id: params[:user_id]
+    )
+    review.to_json
+
+  end
+# including all params attribute makes the syntax general, BUT NOT NECESSARY
+# users who might post reviews do not know their db_id or the games db_id   
+# THE ONLY USEFUL INPUTS WHEN USER WANTS TO REVIEW A GAME ARE (THEIR SCORE, THEIR COMMENT)...remaining attributes are auto filled
+
+# DISREGARD THIS......SO IN THE FRONT END FOR, INSIST ON ALL FORM FIELDS TO BE FILLED, (check if length of field > 0)
+
+
 
 end
